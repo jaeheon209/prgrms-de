@@ -18,31 +18,31 @@ def get_Redshift_connection():
     port = 5439
     dbname = "dev"
     conn = psycopg2.connect("dbname={dbname} user={user} host={host} password={password} port={port}".format(
-        dbname=dbname,
-        user=redshift_user,
-        password=redshift_pass,
-        host=host,
-        port=port
+		dbname=dbname,
+		user=redshift_user,
+		password=redshift_pass,
+		host=host,
+		port=port
     ))
     conn.set_session(autocommit=True)
     return conn.cursor()
 
 def etl():
-	# Extract
+    # Extract
     link = "https://s3-geospatial.s3-us-west-2.amazonaws.com/name_gender.csv"
-	result = requests.get(link)lines = result.text.split("\n")
+    result = requests.get(link)lines = result.text.split("\n")
 	
-	# create cur & idempotent
-	cur = get_Redshift_connection()
-	sql = "DELETE FROM jaeheon209.name_gender"
-	cur.execute(sql)
-	for r in lines[1:]:
-		if r != '':
-		(name, gender) = r.split(",")
-		print(name, "-", gender)
-		sql = "INSERT INTO jaeheon209.name_gender VALUES ('{name}', '{gender}')".format(name=name, gender=gender)
-		print(sql)
-		cur.execute(sql)
+    # create cur & idempotent
+    cur = get_Redshift_connection()
+    sql = "DELETE FROM jaeheon209.name_gender"
+    cur.execute(sql)
+    for r in lines[1:]:
+        if r != '':
+            (name, gender) = r.split(",")
+            print(name, "-", gender)
+            sql = "INSERT INTO jaeheon209.name_gender VALUES ('{name}', '{gender}')".format(name=name, gender=gender)
+            print(sql)
+            cur.execute(sql)
 
 task = PythonOperator(
 	task_id = 'perform_etl',
